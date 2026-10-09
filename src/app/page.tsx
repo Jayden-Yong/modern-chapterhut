@@ -2,8 +2,8 @@ import Image from "next/image";
 import HomeCard from "@/ui/components/HomeCard";
 
 export default function Home() {
-  const cardContent1 = "ChapterHut is a work of passion by an ordinary university student. At the start of its creation, ChapterHut is only but a simple blog intended to promote some budget friendly tech products that are currently on sale in the ChpaterHut Store page. That simple blog served as a product page to present the wonderful selected products to patrons in an aesthetic way. However, to further realize the dream of creating a place for avid readers to settle in, ChapterHut took one small step to introduce ChapterHut Novels and ChapterHut Scribes for both authors and readers to find a sanctuary for their hobbies."
-  const cardContent2 = "ChapterHut is a miniature project as of now. Although still in its infancy, more content and features will be added in time. Any support from users are much appreciated and feel free to contact me if you have any suggestions. In the mean time, enjoy our free light novel on ChapterHut Novels!"
+  const cardContent1 = "Chapterhut is a work of passion by an ordinary university student. At the start of its creation, Chapterhut is only but a simple blog intended to promote some budget friendly tech products that are currently on sale in the Chapterhut Store page. That simple blog served as a product page to present the wonderful selected products to patrons in an aesthetic way. However, to further realize the dream of creating a place for avid readers to settle in, Chapterhut took one small step to introduce Chapterhut Novels and Chapterhut Scribes for both authors and readers to find a sanctuary for their hobbies."
+  const cardContent2 = "Chapterhut is a miniature project as of now. Although still in its infancy, more content and features will be added in time. Any support from users are much appreciated and feel free to contact me if you have any suggestions. In the mean time, enjoy our free light novel on Chapterhut Novels!"
 
   return (
     <main className="justify-center">

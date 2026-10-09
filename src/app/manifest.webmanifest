@@ -1,0 +1,16 @@
+{
+  "name": "Chapterhut",
+  "short_name": "Chapterhut",
+  "description": "A cozy corner for readers and writers — novels, and a small storefront.",
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#FDEBD3",
+  "background_color": "#FDEBD3",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

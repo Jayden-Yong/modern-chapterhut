@@ -24,18 +24,18 @@ export default function Navbar() {
                     {/* Brand - aligned left */}
                     <div className='flex space-x-2 items-center'>
                         <Image
-                            src="/ChapterHut_transparent_new.png"
-                            alt='ChapterHut logo'
-                            width={60}
-                            height={60}
+                            src="/chapterhut_icon.png"
+                            alt='Chapterhut logo'
+                            width={48}
+                            height={48}
                             className='hidden md:block'
                         />
                         <div className="shrink-0">
                             <Link
                                 href="/store"
-                                className="text-xl font-bold tracking-tight hover:text-accent transition-colors duration-200"
+                                className="text-2xl font-bold tracking-tight text-foreground hover:text-accent transition-colors duration-200"
                             >
-                                ChapterHut {(activePage === 'Home') ? '' : activePage}
+                                Chapterhut {(activePage === 'Home') ? '' : activePage}
                             </Link>
                         </div>
                     </div>

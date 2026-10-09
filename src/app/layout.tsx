@@ -4,7 +4,7 @@ import { lusitana, poppins } from '@/ui/fonts';
 import Navbar from '@/ui/components/Navbar';
 
 export const metadata: Metadata = {
-  title: "ChapterHut",
+  title: "Chapterhut",
   description: "A cozy corner for readers and writers — novels, and a small storefront.",
 };
 
