@@ -1,65 +1,35 @@
 import Image from "next/image";
+import HomeCard from "@/ui/components/HomeCard";
 
 export default function Home() {
+  const cardContent1 = "ChapterHut is a work of passion by an ordinary university student. At the start of its creation, ChapterHut is only but a simple blog intended to promote some budget friendly tech products that are currently on sale in the ChpaterHut Store page. That simple blog served as a product page to present the wonderful selected products to patrons in an aesthetic way. However, to further realize the dream of creating a place for avid readers to settle in, ChapterHut took one small step to introduce ChapterHut Novels and ChapterHut Scribes for both authors and readers to find a sanctuary for their hobbies."
+  const cardContent2 = "ChapterHut is a miniature project as of now. Although still in its infancy, more content and features will be added in time. Any support from users are much appreciated and feel free to contact me if you have any suggestions. In the mean time, enjoy our free light novel on ChapterHut Novels!"
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+    <main className="justify-center">
+      <div className="font-poppins text-center space-y-2 md:space-y-6 md:mt-6">
+        <h3 className="text-sm md:text-xl">A dream and passion</h3>
+        <h1 className="text-6xl md:text-9xl font-bold">Realized</h1>
         <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+          src='/dream-bubble.png'
+          width={150}
+          height={80}
+          className="w-3/5 md:w-2/5 h-auto mx-auto"
+          alt="Image of Dream Bubble"
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+      </div>
+      <HomeCard
+        imgPath="/home/puzzle.png"
+        cardTitle="About Chapterhut"
+        cardContent={cardContent1}
+        invertOrder={false}
+      />
+      <HomeCard
+        imgPath="/home/growth.png"
+        cardTitle="Growing with passion"
+        cardContent={cardContent2}
+        invertOrder={true}
+      />
+    </main>
   );
 }
