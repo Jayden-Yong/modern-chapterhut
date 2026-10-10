@@ -4,6 +4,79 @@
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
 <!-- END:nextjs-agent-rules -->
 
+# ChapterHut — Project Reference
+
+Cozy storefront for novels + light reading/blog. Personal project, early stage.
+
+## Stack
+
+- Next.js 16.2.10 (App Router) + React 19.2.4 + TypeScript (`package.json`)
+- Tailwind CSS v4 (`@import "tailwindcss"` in `src/ui/globals.css:1`)
+- `lucide-react` icons, custom theme toggle (see Gotchas)
+- Fonts via `next/font/google`: Poppins + Lusitana (`src/ui/fonts.ts:1-11`)
+
+## Commands
+
+- `npm run dev` — dev server (`localhost:3000`)
+- `npm run build` / `npm start` — production build/serve
+- `npm run lint` — ESLint (`eslint-config-next`)
+
+## Structure
+
+```
+src/
+  app/
+    layout.tsx          # root layout: fonts, Navbar, container
+    page.tsx            # / home: hero + 2x HomeCard
+    store/
+      layout.tsx        # redundant passthrough <main>{children}</main>
+      page.tsx          # /store stub: single <p>
+    favicon.ico / icon.png / apple-icon.png / manifest.webmanifest
+  lib/
+    definitions.ts      # Novel type
+    placeholder-data.ts # unused novels array
+  ui/
+    components/
+      Navbar.tsx        # client nav, Home/Store, Cart(0), mobile menu
+      HomeCard.tsx      # 10-col feature card, invertOrder prop
+      ThemeToggle.tsx   # client dark toggle
+    globals.css         # Tailwind + CSS-var theme tokens
+    fonts.ts            # lusitana + poppins CSS vars
+  pages/                # EMPTY — ignore, App Router only
+public/
+  chapterhut_icon.png / dream-bubble.png / home/{puzzle,growth}.png
+```
+
+`@/*` is aliased to `src/*` (`tsconfig.json:21-23`).
+`CLAUDE.md` is just `@AGENTS.md`. `README.md:31-42` is slightly stale.
+
+## Routes
+
+- `/` — `src/app/page.tsx:8-34`: centered hero (`font-poppins`), `next/image` hero, 2x `<HomeCard invertOrder={false|true}>`
+- `/store` — `src/app/store/page.tsx:1-5`: stub only
+- Root layout `src/app/layout.tsx:11-23`: `<html class={poppins.variable lusitana.variable}>`, `<Navbar/>`, content wrapper `grow container mx-auto px-4 md:px-20 py-6`
+
+## UI / Theming Conventions
+
+- Use token classes, not hardcoded colors: `bg-background text-foreground bg-surface text-muted text-accent border-border hover:bg-accent-hover`
+- Tokens defined `src/ui/globals.css:9-42`: light `:root` (`--background:#FDEBD3` etc.) + `:root.dark` overrides; wired via `@theme inline` + `@custom-variant dark (&:where(.dark, .dark *))`
+- Fonts: `font-poppins` for body/UI, `font-lusitana` for brand/headings/nav (`Navbar.tsx:21`, `HomeCard.tsx:27`)
+- Client components need `'use client'`: Navbar (useState + usePathname), ThemeToggle (useState + useEffect)
+- Navbar pattern `src/ui/components/Navbar.tsx:13-18`: `navlinks=[{Home,/},{Store,/store}]`, `activePage` via `usePathname()`, desktop `hidden md:flex`, mobile `md:hidden` toggle
+
+## Data
+
+- `Novel` in `src/lib/definitions.ts:1-7`: `{id, novel_name, author_id, status:'ongoing'|'completed'|'draft', date_created}`
+- `src/lib/placeholder-data.ts:1-32`: 5 sample novels, currently unimported anywhere — use when wiring real list/detail pages
+
+## Gotchas — Do Not Reintroduce
+
+1. `next-themes` is installed but unused — theme is manual `localStorage theme` + `documentElement.classList.toggle("dark")` in `ThemeToggle.tsx:4-32`. Don't add a second provider without removing this.
+2. `src/pages/` is empty legacy — all routes are App Router in `src/app/`.
+3. `/store` layout is passthrough — don't nest duplicate `<Navbar/>` there.
+4. `Cart (0)` in Navbar desktop/mobile is hardcoded static.
+5. Brand link in Navbar points to `/store` (`Navbar.tsx:35`), not `/` — intentional? Verify before changing.
+
 # Layout Spacing and Alignment Guidelines
 
 To maintain visual consistency and avoid layout bugs (such as squeezed mobile grids, inconsistent spacing, or cropped media elements):
