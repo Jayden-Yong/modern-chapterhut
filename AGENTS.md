@@ -12,7 +12,7 @@ Cozy storefront for novels + light reading/blog. Personal project, early stage.
 
 - Next.js 16.2.10 (App Router) + React 19.2.4 + TypeScript (`package.json`)
 - Tailwind CSS v4 (`@import "tailwindcss"` in `src/ui/globals.css:1`)
-- `lucide-react` icons, custom theme toggle (see Gotchas)
+- `lucide-react` icons, `next-themes` for dark mode (see Gotchas)
 - Fonts via `next/font/google`: Poppins + Lusitana (`src/ui/fonts.ts:1-11`)
 
 ## Commands
@@ -20,6 +20,18 @@ Cozy storefront for novels + light reading/blog. Personal project, early stage.
 - `npm run dev` — dev server (`localhost:3000`)
 - `npm run build` / `npm start` — production build/serve
 - `npm run lint` — ESLint (`eslint-config-next`)
+
+## Workflow
+
+- One branch fixes one issue. Name the branch for the issue's code — issue #2 is `MCH-4`,
+  issue #4 is `MCH-5`. Never `fix/store-navbar` or `main`-adjacent names.
+- Work too small to warrant its own issue — an adjacent one-line fix in the same file,
+  or a correction to this file — rides along on the branch of the issue it serves, and
+  gets named in that issue's comment so it is not mistaken for scope creep.
+- Anything larger than that gets its own issue first.
+- After a branch changes code, re-read this file and update whatever the change made
+  stale — line references, structure entries, gotchas. A branch that edits code but
+  leaves this file describing the old behaviour is not done.
 
 ## Structure
 
@@ -29,7 +41,7 @@ src/
     layout.tsx          # root layout: fonts, Navbar, container
     page.tsx            # / home: hero + 2x HomeCard
     store/
-      layout.tsx        # redundant passthrough <main>{children}</main>
+      layout.tsx        # <main>{children}</main> only — no Navbar
       page.tsx          # /store stub: single <p>
     favicon.ico / icon.png / apple-icon.png / manifest.webmanifest
   lib/
@@ -39,7 +51,8 @@ src/
     components/
       Navbar.tsx        # client nav, Home/Store, Cart(0), mobile menu
       HomeCard.tsx      # 10-col feature card, invertOrder prop
-      ThemeToggle.tsx   # client dark toggle
+      ThemeProvider.tsx # client wrapper: next-themes, attribute="class"
+      ThemeToggle.tsx   # client dark toggle, useTheme + useSyncExternalStore
     globals.css         # Tailwind + CSS-var theme tokens
     fonts.ts            # lusitana + poppins CSS vars
   pages/                # EMPTY — ignore, App Router only
@@ -54,14 +67,14 @@ public/
 
 - `/` — `src/app/page.tsx:8-34`: centered hero (`font-poppins`), `next/image` hero, 2x `<HomeCard invertOrder={false|true}>`
 - `/store` — `src/app/store/page.tsx:1-5`: stub only
-- Root layout `src/app/layout.tsx:11-23`: `<html class={poppins.variable lusitana.variable}>`, `<Navbar/>`, content wrapper `grow container mx-auto px-4 md:px-20 py-6`
+- Root layout `src/app/layout.tsx:12-27`: `<html class={poppins.variable lusitana.variable}>`, `<ThemeProvider>`, `<Navbar/>`, content wrapper `grow container mx-auto px-4 md:px-20 py-6`
 
 ## UI / Theming Conventions
 
 - Use token classes, not hardcoded colors: `bg-background text-foreground bg-surface text-muted text-accent border-border hover:bg-accent-hover`
 - Tokens defined `src/ui/globals.css:9-42`: light `:root` (`--background:#FDEBD3` etc.) + `:root.dark` overrides; wired via `@theme inline` + `@custom-variant dark (&:where(.dark, .dark *))`
 - Fonts: `font-poppins` for body/UI, `font-lusitana` for brand/headings/nav (`Navbar.tsx:21`, `HomeCard.tsx:27`)
-- Client components need `'use client'`: Navbar (useState + usePathname), ThemeToggle (useState + useEffect)
+- Client components need `'use client'`: Navbar (useState + usePathname), ThemeToggle (useTheme + useSyncExternalStore), ThemeProvider (context passthrough)
 - Navbar pattern `src/ui/components/Navbar.tsx:13-18`: `navlinks=[{Home,/},{Store,/store}]`, `activePage` via `usePathname()`, desktop `hidden md:flex`, mobile `md:hidden` toggle
 
 ## Data
@@ -71,7 +84,7 @@ public/
 
 ## Gotchas — Do Not Reintroduce
 
-1. `next-themes` is installed but unused — theme is manual `localStorage theme` + `documentElement.classList.toggle("dark")` in `ThemeToggle.tsx:4-32`. Don't add a second provider without removing this.
+1. Theming runs through `next-themes` (v0.4, a runtime dependency). `ThemeProvider.tsx:7` wraps the app in `<NextThemesProvider attribute="class" defaultTheme="system" enableSystem>`, mounted once in the root layout (`layout.tsx:16-23`). `ThemeToggle.tsx` reads `useTheme()` and gates on `useSyncExternalStore` for SSR safety. Do not hand-roll a second `classList.toggle("dark")` — `attribute="class"` is what pairs with `@custom-variant dark` at `globals.css:32`.
 2. `src/pages/` is empty legacy — all routes are App Router in `src/app/`.
 3. `/store` layout is passthrough — don't nest duplicate `<Navbar/>` there.
 4. `Cart (0)` in Navbar desktop/mobile is hardcoded static.
