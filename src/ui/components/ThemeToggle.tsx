@@ -1,32 +1,30 @@
+'use client';
+
+import { useSyncExternalStore } from "react";
+import { useTheme } from "next-themes";
 import { Moon, Sun } from "lucide-react"
-import { useEffect, useState } from "react";
+
+function subscribe() {
+    return () => {};
+}
 
 export default function ThemeToggle() {
-    const [theme, setTheme] = useState("light");
+    const mounted = useSyncExternalStore(subscribe, () => true, () => false);
+    const { resolvedTheme, setTheme } = useTheme();
 
-    useEffect(() => {
-        const storedTheme = localStorage.getItem("theme");
-        if (storedTheme) {
-            setTheme(storedTheme);
-            document.documentElement.classList.toggle("dark", storedTheme === "dark");
-        } else {
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            const initialTheme = prefersDark ? "dark" : "light";
-            setTheme(initialTheme);
-            document.documentElement.classList.toggle("dark", prefersDark);
-        }
-    }, []);
+    if (!mounted) {
+        return <span className="inline-block h-6 w-6" />;
+    }
+
+    const isDark = resolvedTheme === 'dark';
 
     const toggleTheme = () => {
-        const newTheme = theme === 'light' ? 'dark' : 'light';
-        setTheme(newTheme);
-        document.documentElement.classList.toggle("dark", newTheme === "dark");
-        localStorage.setItem("theme", newTheme);
+        setTheme(isDark ? 'light' : 'dark');
     };
 
     return (
-        <button className="rounded-full p-2 md:p-0 cursor-pointer text-muted hover:text-accent transition-all ease-in-out" onClick={toggleTheme}>
-            {theme === 'light' ? <Moon /> : <Sun />}
+        <button aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'} className="rounded-full p-2 md:p-0 cursor-pointer text-muted hover:text-accent transition-all ease-in-out" onClick={toggleTheme}>
+            {isDark ? <Sun /> : <Moon />}
         </button>
     )
 }
