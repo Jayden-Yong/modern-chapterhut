@@ -50,7 +50,7 @@ export default function Navbar() {
                                     key={link.name}
                                     href={link.href}
                                     className={`text-base font-medium hover:text-accent transition-colors duration-200
-                                        ${isActive ? 'bg-background/20 hover:text-accent font-bold' : 'text-muted hover:bg-background/20 hover:text-accent'}"`}
+                                        ${isActive ? 'bg-background/20 hover:text-accent font-bold' : 'text-muted hover:bg-background/20 hover:text-accent'}`}
                                 >
                                     {link.name}
                                 </Link>
