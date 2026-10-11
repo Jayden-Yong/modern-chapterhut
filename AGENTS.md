@@ -24,7 +24,7 @@ Cozy storefront for novels + light reading/blog. Personal project, early stage.
 ## Workflow
 
 - One branch fixes one issue. Name the branch for the issue's code — issue #2 is `MCH-4`,
-  issue #4 is `MCH-5`. Never `fix/store-navbar` or `main`-adjacent names.
+  issue #4 is `MCH-5`, issue #3 is `MCH-6`. Never `fix/store-navbar` or `main`-adjacent names.
 - Work too small to warrant its own issue — an adjacent one-line fix in the same file,
   or a correction to this file — rides along on the branch of the issue it serves, and
   gets named in that issue's comment so it is not mistaken for scope creep.
@@ -42,11 +42,17 @@ src/
     page.tsx            # / home: hero + 2x HomeCard
     store/
       layout.tsx        # <main>{children}</main> only — no Navbar
-      page.tsx          # /store stub: single <p>
+      page.tsx          # /store: novel list, read through the repository
     favicon.ico / icon.png / apple-icon.png / manifest.webmanifest
   lib/
-    definitions.ts      # Novel type
-    placeholder-data.ts # unused novels array
+    models/
+      novel.ts          # Novel + NovelStatus
+    contracts/
+      novel-repository.ts  # NovelRepository — the port (interfaces only)
+    placeholder-data.ts # fixture: Novel[] (exported, typed)
+    repositories/
+      novels.ts         # Novels — the fixture-backed adapter
+      index.ts          # getNovelRepository() — the only swap point
   ui/
     components/
       Navbar.tsx        # client nav, Home/Store, Cart(0), mobile menu
@@ -61,12 +67,12 @@ public/
 ```
 
 `@/*` is aliased to `src/*` (`tsconfig.json:21-23`).
-`CLAUDE.md` is just `@AGENTS.md`. `README.md:31-42` is slightly stale.
+`CLAUDE.md` is just `@AGENTS.md`. `README.md:31-42` is stale — its structure block still reads `lib/ # types and sample data` and shows no `models/`, `contracts/` or `repositories/`.
 
 ## Routes
 
 - `/` — `src/app/page.tsx:8-34`: centered hero (`font-poppins`), `next/image` hero, 2x `<HomeCard invertOrder={false|true}>`
-- `/store` — `src/app/store/page.tsx:1-5`: stub only
+- `/store` — `src/app/store/page.tsx:3-4`: async Server Component; `await getNovelRepository().findAll()`, then renders each novel (name, status, and id · author · date). Statically prerendered.
 - Root layout `src/app/layout.tsx:12-27`: `<html class={poppins.variable lusitana.variable}>`, `<ThemeProvider>`, `<Navbar/>`, content wrapper `grow container mx-auto px-4 md:px-20 py-6`
 
 ## UI / Theming Conventions
@@ -79,8 +85,10 @@ public/
 
 ## Data
 
-- `Novel` in `src/lib/definitions.ts:1-7`: `{id, novel_name, author_id, status:'ongoing'|'completed'|'draft', date_created}`
-- `src/lib/placeholder-data.ts:1-32`: 5 sample novels, currently unimported anywhere — use when wiring real list/detail pages
+- `Novel` in `src/lib/models/novel.ts:3-9` (`NovelStatus` at `:1`): `{id, novel_name, author_id, status, date_created}`
+- `NovelRepository` in `src/lib/contracts/novel-repository.ts:3-7`: `findAll()`, `findById(id)`, `findByAuthor(authorId)` — all `Promise`-returning, so the storage can change behind them without touching a caller
+- `src/lib/placeholder-data.ts:1-38`: 5 sample novels typed as `Novel[]`, reached **only** through `NovelRepository` — a component must never import the array. `/store` is the worked example
+- Which implementation is live is decided in exactly one place: `getNovelRepository()` (`src/lib/repositories/index.ts:6`)
 
 ## Gotchas — Do Not Reintroduce
 
@@ -89,6 +97,14 @@ public/
 3. `/store` layout is passthrough — don't nest duplicate `<Navbar/>` there.
 4. `Cart (0)` in Navbar desktop/mobile is hardcoded static.
 5. Brand link in Navbar points to `/store` (`Navbar.tsx:35`), not `/` — intentional? Verify before changing.
+6. Data access goes through `NovelRepository`. Never import `placeholder-data.ts` from a
+   component — pointing a page at the array re-couples the UI to the fixture and defeats the
+   layer. Swap implementations in `repositories/index.ts` only.
+7. Contracts live in `src/lib/contracts/<thing>.ts`; implementations live in their layer folder
+   (`src/lib/repositories/`, later `src/lib/services/`). The dependency runs one way — an adapter
+   imports a port, never the reverse — and the path never repeats the concept
+   (`contracts/novel-repository.ts`, not `contracts/repositories/novel-repository.ts`). A service
+   layer is the next layer *if and when* a rule spans repositories or needs authorization, not before.
 
 # Layout Spacing and Alignment Guidelines
 
