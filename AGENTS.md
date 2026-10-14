@@ -1,4 +1,5 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
@@ -20,7 +21,8 @@ Cozy storefront for novels + light reading/blog. Personal project, early stage.
 
 - `npm run dev` — dev server (`localhost:3000`)
 - `npm run build` / `npm start` — production build/serve
-- `npm run lint` — ESLint (`eslint-config-next`)
+- `npm run lint` — ESLint (`eslint-config-next`), `--max-warnings=0` so local matches CI
+- `npm run format` / `npm run format:check` — prettier (write / verify)
 - `docker build -t modern-chapterhut .` — production image (3 stages, standalone runtime)
 - `docker compose up --build` — the same image, joined to the external `coolify` network
 
@@ -77,10 +79,46 @@ Dockerfile         # deps -> builder -> runner, node:24-alpine, runs as the `nex
 .dockerignore      # excludes node_modules/.next/.git — must NOT exclude public/
 docker-compose.yml # app only; joins the external `coolify` network
 .nvmrc             # 24 — the Node pin CI reads via `node-version-file:`
+.prettierrc.json   # tabWidth 4 — the one setting that preserves the hand-written style
+.prettierignore    # package*.json (npm owns them), *.yml/*.svg (see Gotchas 10)
+.pre-commit-config.yaml # generic hooks + local prettier/eslint, so pins live in devDependencies
+.github/workflows/ # ci.yml (lint/types/build), docker.yml (build gate), security.yml (weekly audit)
+.github/dependabot.yml # weekly npm / github-actions / docker dependency PRs
 ```
 
 `@/*` is aliased to `src/*` (`tsconfig.json:21-23`).
 `CLAUDE.md` is just `@AGENTS.md`. `README.md:31-42` is stale — its structure block still reads `lib/ # types and sample data` and shows no `models/`, `contracts/` or `repositories/`.
+
+## CI
+
+All three workflows live in `.github/workflows/` and fire on pull requests and pushes to `main`.
+
+| Workflow       | Job(s)                   | What has to pass                                                                      |
+| -------------- | ------------------------ | ------------------------------------------------------------------------------------- |
+| `ci.yml`       | `lint`, `types`, `build` | `npm run lint`, `npm run format:check`, `npx tsc --noEmit`, `npm run build`           |
+| `docker.yml`   | `build`                  | the Dockerfile builds — buildx with `push: false`, a gate and not a deploy            |
+| `security.yml` | `audit`                  | weekly cron (Mondays) plus manual dispatch: `npm audit --omit=dev --audit-level=high` |
+
+Run the same set locally before pushing:
+
+```
+npm ci && npm run lint && npm run format:check && npx tsc --noEmit && npm run build
+```
+
+The `build` job then asserts the **prerender invariant**, because a green build is not evidence
+that data reached the page — a route can flip to dynamic rendering with the build output unchanged:
+
+- `.next/standalone/server.js` exists
+- `.next/server/app/store.meta` still carries `"x-nextjs-prerender": "1"`
+- `.next/server/app/store.html` still contains at least one `NOV-###` row
+
+Node comes from `.nvmrc` in every job via `node-version-file:` — bump that one file, never the
+workflows one by one. Dependabot opens weekly PRs for npm, the Actions and the Docker base image,
+all labelled `dependencies`.
+
+`npm audit fix` cannot move the pinned `next` — the pin _is_ the declared range. Security bumps
+land as `npm install next@<latest> eslint-config-next@<latest> --save-exact`, then `npm audit fix`
+for what is left underneath.
 
 ## Routes
 
@@ -117,7 +155,7 @@ docker-compose.yml # app only; joins the external `coolify` network
    (`src/lib/repositories/`, later `src/lib/services/`). The dependency runs one way — an adapter
    imports a port, never the reverse — and the path never repeats the concept
    (`contracts/novel-repository.ts`, not `contracts/repositories/novel-repository.ts`). A service
-   layer is the next layer *if and when* a rule spans repositories or needs authorization, not before.
+   layer is the next layer _if and when_ a rule spans repositories or needs authorization, not before.
 8. The container serves `.next/standalone`, which holds `server.js` and `node_modules` but
    **neither `public/` nor `.next/static`**. The last two `COPY` lines of the Dockerfile's runner
    stage are the only thing that puts them there — drop either and every asset 404s while
@@ -126,22 +164,27 @@ docker-compose.yml # app only; joins the external `coolify` network
 9. `/store` is statically prerendered, so `npm run build` **executes** its data access — inside the
    container too. That is invisible while `NovelRepository` reads a fixture, and it becomes a
    build-time database dependency the day a real database sits behind the port.
+10. `package.json`, `package-lock.json`, `*.yml`/`*.yaml` and `*.svg` are deliberately outside
+    prettier — see `.prettierignore`. npm owns the package files at 2-space, YAML keeps
+    `mcp-server`'s hand-written idiom, and prettier 3 has **no SVG parser** (it errors on an SVG
+    rather than skipping it). Adding any of them to a prettier glob turns `format:check`, and the
+    lint job with it, red for files nobody meant to touch.
 
 # Layout Spacing and Alignment Guidelines
 
 To maintain visual consistency and avoid layout bugs (such as squeezed mobile grids, inconsistent spacing, or cropped media elements):
 
 1. **Responsive Grid Spanning (Mobile-First)**
-   - Always define grid layouts mobile-first. If a grid is declared, ensure column spans are defined for all breakpoints (e.g., `col-span-1 md:col-span-3`) to prevent elements from defaulting to a single-column layout on mobile.
+    - Always define grid layouts mobile-first. If a grid is declared, ensure column spans are defined for all breakpoints (e.g., `col-span-1 md:col-span-3`) to prevent elements from defaulting to a single-column layout on mobile.
 
 2. **Consistent Layout Padding**
-   - When organizing multiple columns/blocks side-by-side or stacked, apply matching padding (e.g., `p-6 md:p-8`) across sibling blocks to keep the text and image boundaries aligned consistently with outer card borders.
+    - When organizing multiple columns/blocks side-by-side or stacked, apply matching padding (e.g., `p-6 md:p-8`) across sibling blocks to keep the text and image boundaries aligned consistently with outer card borders.
 
 3. **Absolute Elements & Padding Bounds (Next.js `<Image fill />`)**
-   - Next.js's `<Image fill />` uses absolute positioning and ignores the parent's padding, which can lead to layout clipping or uneven gaps.
-   - To make the image respect padding bounds while keeping its size dynamically maximized:
-     - Add padding (e.g., `p-6 md:p-8`) to the grid/column cell wrapper.
-     - Insert a relative inner wrapper (`w-full h-48 md:h-full min-h-[150px]`) inside the padded cell to house the `<Image fill className="object-contain" />`.
+    - Next.js's `<Image fill />` uses absolute positioning and ignores the parent's padding, which can lead to layout clipping or uneven gaps.
+    - To make the image respect padding bounds while keeping its size dynamically maximized:
+        - Add padding (e.g., `p-6 md:p-8`) to the grid/column cell wrapper.
+        - Insert a relative inner wrapper (`w-full h-48 md:h-full min-h-[150px]`) inside the padded cell to house the `<Image fill className="object-contain" />`.
 
 4. **Sibling Spacing Utilities (`space-y-*`)**
-   - Never apply flex sibling spacing (e.g. `space-y-*`) directly to elements with single children (e.g., `<h3>{title}</h3>`). Use margin utilities (`mb-*`) on the element itself, or place the `space-y-*` utility on the parent container.
+    - Never apply flex sibling spacing (e.g. `space-y-*`) directly to elements with single children (e.g., `<h3>{title}</h3>`). Use margin utilities (`mb-*`) on the element itself, or place the `space-y-*` utility on the parent container.
