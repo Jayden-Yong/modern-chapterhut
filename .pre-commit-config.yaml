@@ -1,0 +1,27 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=2048]
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  # Local hooks rather than mirrors: prettier is then pinned exactly once, in
+  # devDependencies, and the formatter and the linter cannot drift apart.
+  - repo: local
+    hooks:
+      - id: prettier
+        name: prettier
+        entry: npx prettier --write
+        language: system
+        types_or: [javascript, jsx, ts, tsx, css, json, markdown]
+        exclude: ^(package\.json|package-lock\.json)$|\.ya?ml$|\.svg$
+      - id: eslint
+        name: eslint
+        entry: npx eslint --max-warnings=0
+        language: system
+        types_or: [javascript, jsx, ts, tsx]
