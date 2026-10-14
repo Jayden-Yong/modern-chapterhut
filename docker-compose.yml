@@ -1,0 +1,17 @@
+services:
+  chapterhut:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chapterhut
+    environment:
+      - 'PORT=${PORT:-3000}'
+    expose:
+      - '3000'
+    networks:
+      - coolify
+    restart: unless-stopped
+
+networks:
+  coolify:
+    external: true
