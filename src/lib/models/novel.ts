@@ -1,4 +1,4 @@
-export type NovelStatus = 'ongoing' | 'completed' | 'draft';
+export type NovelStatus = "ongoing" | "completed" | "draft";
 
 export type Novel = {
     id: string;

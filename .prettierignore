@@ -1,0 +1,14 @@
+# build output and deps
+.next
+node_modules
+
+# npm owns these at 2-space, so a formatter here fights every install
+package.json
+package-lock.json
+
+# workflows keep mcp-server's hand-written idiom; check-yaml covers syntax
+*.yml
+*.yaml
+
+# prettier 3 has no SVG parser — it errors on these rather than formatting them
+*.svg
