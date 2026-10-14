@@ -10,7 +10,8 @@ Cozy storefront for novels + light reading/blog. Personal project, early stage.
 
 ## Stack
 
-- Next.js 16.2.10 (App Router) + React 19.2.4 + TypeScript (`package.json`)
+- Next.js 16.4.0 (App Router) + React 19.2.4 + TypeScript (`package.json`)
+- Node 24 LTS (`.nvmrc`) — one pin, read by CI, the image and any local `nvm use`
 - Tailwind CSS v4 (`@import "tailwindcss"` in `src/ui/globals.css:1`)
 - `lucide-react` icons, `next-themes` for dark mode (see Gotchas)
 - Fonts via `next/font/google`: Poppins + Lusitana (`src/ui/fonts.ts:1-11`)
@@ -20,6 +21,8 @@ Cozy storefront for novels + light reading/blog. Personal project, early stage.
 - `npm run dev` — dev server (`localhost:3000`)
 - `npm run build` / `npm start` — production build/serve
 - `npm run lint` — ESLint (`eslint-config-next`)
+- `docker build -t modern-chapterhut .` — production image (3 stages, standalone runtime)
+- `docker compose up --build` — the same image, joined to the external `coolify` network
 
 ## Workflow
 
@@ -66,6 +69,16 @@ public/
   chapterhut_icon.png / dream-bubble.png / home/{puzzle,growth}.png
 ```
 
+Repo root, deploy-shaped:
+
+```
+next.config.ts     # `output: "standalone"` — what makes a slim runtime image possible
+Dockerfile         # deps -> builder -> runner, node:24-alpine, runs as the `nextjs` user
+.dockerignore      # excludes node_modules/.next/.git — must NOT exclude public/
+docker-compose.yml # app only; joins the external `coolify` network
+.nvmrc             # 24 — the Node pin CI reads via `node-version-file:`
+```
+
 `@/*` is aliased to `src/*` (`tsconfig.json:21-23`).
 `CLAUDE.md` is just `@AGENTS.md`. `README.md:31-42` is stale — its structure block still reads `lib/ # types and sample data` and shows no `models/`, `contracts/` or `repositories/`.
 
@@ -105,6 +118,14 @@ public/
    imports a port, never the reverse — and the path never repeats the concept
    (`contracts/novel-repository.ts`, not `contracts/repositories/novel-repository.ts`). A service
    layer is the next layer *if and when* a rule spans repositories or needs authorization, not before.
+8. The container serves `.next/standalone`, which holds `server.js` and `node_modules` but
+   **neither `public/` nor `.next/static`**. The last two `COPY` lines of the Dockerfile's runner
+   stage are the only thing that puts them there — drop either and every asset 404s while
+   `docker build` still reports success. When a change misses in the image, check those two lines
+   before anything else, and remember `next.config.ts` must keep `output: "standalone"`.
+9. `/store` is statically prerendered, so `npm run build` **executes** its data access — inside the
+   container too. That is invisible while `NovelRepository` reads a fixture, and it becomes a
+   build-time database dependency the day a real database sits behind the port.
 
 # Layout Spacing and Alignment Guidelines
 
