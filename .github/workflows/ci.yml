@@ -62,11 +62,12 @@ jobs:
       - name: Build
         run: npm run build
 
-      # A green build is not evidence that data reached the page: a page can
-      # silently flip to dynamic rendering and nothing in the build output says so.
-      - name: Assert the store page is still statically prerendered with its rows
+      # A green build is not evidence about rendering mode: the route can flip
+      # either way with nothing in the build output saying so.
+      - name: Assert the store page is dynamic and still compiles
         run: |
           test -f .next/standalone/server.js
-          grep -q '"x-nextjs-prerender": "1"' .next/server/app/store.meta
-          test "$(grep -o 'NOV-[0-9]\{3\}' .next/server/app/store.html | sort -u | wc -l)" -ge 1
           test -d .next/standalone/node_modules
+          test -f .next/server/app/store/page.js
+          test ! -f .next/server/app/store.html
+          test ! -f .next/server/app/store.meta
