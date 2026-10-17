@@ -1,4 +1,4 @@
-export type NovelStatus = "ongoing" | "completed" | "draft";
+import { NovelStatus } from "@/lib/constants/novel-status";
 
 export type Novel = {
     id: string;
