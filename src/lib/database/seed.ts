@@ -18,7 +18,9 @@ async function main() {
             .onConflictDoNothing();
 
         const rows = await db.select().from(novelsTable);
-        console.log(`seeded: ${novels.length} source rows, ${rows.length} in table`);
+        console.log(
+            `seeded: ${novels.length} source rows, ${rows.length} in table`,
+        );
     } finally {
         await pool.end();
     }
