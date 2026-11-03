@@ -1,5 +1,10 @@
 import { getNovelRepository } from "@/lib/repositories";
 
+// The novels repository reads Postgres, so this route must render per request.
+// Without this the build would need a reachable database, and CI's build job
+// (which runs with no DATABASE_URL) would fail.
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
     const novels = await getNovelRepository().findAll();
 

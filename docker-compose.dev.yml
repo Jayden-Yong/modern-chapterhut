@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: database
+    environment:
+      - 'POSTGRES_USER=chapterhut'
+      - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
+      - 'POSTGRES_DB=chapterhut'
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - 'chapterhut-database-data:/var/lib/postgresql'
+    restart: unless-stopped
+
+volumes:
+  chapterhut-database-data:

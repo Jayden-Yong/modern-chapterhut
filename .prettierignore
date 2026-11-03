@@ -12,3 +12,6 @@ package-lock.json
 
 # prettier 3 has no SVG parser — it errors on these rather than formatting them
 *.svg
+
+# drizzle-kit writes these; formatting them makes every db:generate fight format:check
+/drizzle
