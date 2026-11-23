@@ -17,6 +17,10 @@ updates:
           - "react-dom"
           - "@types/react"
           - "@types/react-dom"
+      tailwind:
+        patterns:
+          - "tailwindcss"
+          - "@tailwindcss/*"
 
   - package-ecosystem: github-actions
     directory: "/"

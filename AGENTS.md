@@ -114,8 +114,11 @@ that data reached the page — a route can flip to dynamic rendering with the bu
 
 Node comes from `.nvmrc` in every job via `node-version-file:` — bump that one file, never the
 workflows one by one. Dependabot opens weekly PRs for npm, the Actions and the Docker base image,
-all labelled `dependencies`, grouping `next`/`eslint-config-next` and
-`react`/`react-dom`/`@types/react*` so lockstep pairs move together (`.github/dependabot.yml`).
+all labelled `dependencies`, grouping `next`/`eslint-config-next`,
+`react`/`react-dom`/`@types/react*` and `tailwindcss`/`@tailwindcss/*` so lockstep families
+move together (`.github/dependabot.yml`). The tailwind group exists because core and the
+postcss plugin publish from one monorepo at one version: split, they arrive as two PRs that must
+land core-first, and the skew they leave behind is invisible to `lint`, `types` and `build`.
 
 `npm audit fix` cannot move exact-pinned packages (`next`, `eslint-config-next`, `react`,
 `react-dom`, `prettier`, `typescript`) — the pin _is_ the declared range. Security bumps for Next
