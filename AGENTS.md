@@ -11,7 +11,7 @@ Cozy storefront for novels + light reading/blog. Personal project, early stage.
 
 ## Stack
 
-- Next.js 16.4.0 (App Router) + React 19.2.4 + TypeScript (`package.json`)
+- Next.js 16.4.6 (App Router) + React 19.3.1 + TypeScript 6.0.3 (`package.json`)
 - Node 26 (`.nvmrc`, `Dockerfile`, `@types/node@^26`) — keep all three on one major
 - Tailwind CSS v4 (`@import "tailwindcss"` in `src/ui/globals.css:1`)
 - `lucide-react` icons, `next-themes` for dark mode (see Gotchas)
@@ -112,15 +112,17 @@ that data reached the page — a route can flip to dynamic rendering with the bu
 - `.next/server/app/store.meta` still carries `"x-nextjs-prerender": "1"`
 - `.next/server/app/store.html` still contains at least one `NOV-###` row
 
-Node comes from `.nvmrc` in every CI job via `node-version-file:` — bump that file rather than
-editing the workflows one by one, and bump the three `FROM node:<major>-alpine` lines in
-`Dockerfile` (`:2`, `:7`, `:14`) plus `@types/node` in `package.json` in the same branch because
-Docker does not read `.nvmrc`. Dependabot opens weekly PRs for npm, the Actions and the Docker
-base image, all labelled `dependencies`.
+Node comes from `.nvmrc` in every job via `node-version-file:` — bump that one file, never the
+workflows one by one. Dependabot opens weekly PRs for npm, the Actions and the Docker base image,
+all labelled `dependencies`, grouping `next`/`eslint-config-next` and
+`react`/`react-dom`/`@types/react*` so lockstep pairs move together (`.github/dependabot.yml`).
 
-`npm audit fix` cannot move the pinned `next` — the pin _is_ the declared range. Security bumps
+`npm audit fix` cannot move exact-pinned packages (`next`, `eslint-config-next`, `react`,
+`react-dom`, `prettier`, `typescript`) — the pin _is_ the declared range. Security bumps for Next
 land as `npm install next@<latest> eslint-config-next@<latest> --save-exact`, then `npm audit fix`
-for what is left underneath.
+for what is left underneath. TypeScript is exact-pinned at `6.0.3` so a compiler major never
+arrives via a routine update; TypeScript 7.x remains deferred until `typescript-eslint` ships
+stable 7.1+ support and `tsserver` editor support is assessed.
 
 ## Routes
 
