@@ -12,7 +12,7 @@ Cozy storefront for novels + light reading/blog. Personal project, early stage.
 ## Stack
 
 - Next.js 16.4.0 (App Router) + React 19.2.4 + TypeScript (`package.json`)
-- Node 24 LTS (`.nvmrc`) — one pin, read by CI, the image and any local `nvm use`
+- Node 26 (`.nvmrc`, `Dockerfile`, `@types/node@^26`) — keep all three on one major
 - Tailwind CSS v4 (`@import "tailwindcss"` in `src/ui/globals.css:1`)
 - `lucide-react` icons, `next-themes` for dark mode (see Gotchas)
 - Fonts via `next/font/google`: Poppins + Lusitana (`src/ui/fonts.ts:1-11`)
@@ -75,10 +75,10 @@ Repo root, deploy-shaped:
 
 ```
 next.config.ts     # `output: "standalone"` — what makes a slim runtime image possible
-Dockerfile         # deps -> builder -> runner, node:24-alpine, runs as the `nextjs` user
+Dockerfile         # deps -> builder -> runner, node:26-alpine, runs as the `nextjs` user
 .dockerignore      # excludes node_modules/.next/.git — must NOT exclude public/
 docker-compose.yml # app only; joins the external `coolify` network
-.nvmrc             # 24 — the Node pin CI reads via `node-version-file:`
+.nvmrc             # 26 — the Node pin CI reads via `node-version-file:`
 .prettierrc.json   # tabWidth 4 — the one setting that preserves the hand-written style
 .prettierignore    # package*.json (npm owns them), *.yml/*.svg (see Gotchas 10)
 .pre-commit-config.yaml # generic hooks + local prettier/eslint, so pins live in devDependencies
@@ -112,9 +112,11 @@ that data reached the page — a route can flip to dynamic rendering with the bu
 - `.next/server/app/store.meta` still carries `"x-nextjs-prerender": "1"`
 - `.next/server/app/store.html` still contains at least one `NOV-###` row
 
-Node comes from `.nvmrc` in every job via `node-version-file:` — bump that one file, never the
-workflows one by one. Dependabot opens weekly PRs for npm, the Actions and the Docker base image,
-all labelled `dependencies`.
+Node comes from `.nvmrc` in every CI job via `node-version-file:` — bump that file rather than
+editing the workflows one by one, and bump the three `FROM node:<major>-alpine` lines in
+`Dockerfile` (`:2`, `:7`, `:14`) plus `@types/node` in `package.json` in the same branch because
+Docker does not read `.nvmrc`. Dependabot opens weekly PRs for npm, the Actions and the Docker
+base image, all labelled `dependencies`.
 
 `npm audit fix` cannot move the pinned `next` — the pin _is_ the declared range. Security bumps
 land as `npm install next@<latest> eslint-config-next@<latest> --save-exact`, then `npm audit fix`
